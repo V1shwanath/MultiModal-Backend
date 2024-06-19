@@ -3,7 +3,6 @@ from typing import Any, Dict
 import requests
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import jwt
 
 from MultiModal.settings import settings
 
@@ -43,4 +42,5 @@ async def auth_google(code: str) -> Dict[str, Any]:
 
 @router.get("/token")
 async def get_token(token: str = Depends(oauth2_scheme)) -> Dict[str, Any]:
-    return jwt.decode(token, settings.google_client_secret, algorithms=["HS256"])
+    # return jwt.decode(token, settings.google_client_secret, algorithms=["HS256"])
+    return 0

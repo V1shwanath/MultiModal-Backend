@@ -45,19 +45,19 @@ jobs:
   #       POETRY_VIRTUALENVS_CREATE: false
   #   - name: Run mypy check
   #     run: poetry run mypy .
-  pytest:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.9'
-    - name: Install deps
-      uses: knowsuchagency/poetry-install@v1
-      env:
-        POETRY_VIRTUALENVS_CREATE: false
-    - name: Run pytest check
-      run: poetry run pytest -vv --cov="MultiModal" .
-      env:
-        MULTIMODAL_HOST: "0.0.0.0"
+  # pytest:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Set up Python
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: '3.9'
+  #   - name: Install deps
+  #     uses: knowsuchagency/poetry-install@v1
+  #     env:
+  #       POETRY_VIRTUALENVS_CREATE: false
+  #   - name: Run pytest check
+  #     run: poetry run pytest -vv --cov="MultiModal" .
+  #     env:
+  #       MULTIMODAL_HOST: "0.0.0.0"

@@ -1,5 +1,4 @@
 # MultiModal
-<<<<<<< HEAD
 
 This project was generated using fastapi_template.
 
@@ -124,5 +123,3 @@ For running tests on your local machine.
 ```bash
 pytest -vv .
 ```
-=======
->>>>>>> 517d48b0530a029d7d2187d8bf9639ee0c8124e3

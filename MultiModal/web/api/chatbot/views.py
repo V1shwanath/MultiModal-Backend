@@ -1,3 +1,4 @@
+import logging
 import shutil
 
 from fastapi import APIRouter, File, Form, UploadFile
@@ -13,6 +14,14 @@ from MultiModal.static.phi3_visionchat import (
 )
 from MultiModal.static.translation_demo import main
 
+# Setup logger
+logger = logging.getLogger("my_logger")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 router = APIRouter()
 
 router.add_middleware(
@@ -26,57 +35,87 @@ router.add_middleware(
 
 @router.get("/")
 def index():
+    """
+    Returns a simple greeting message.
+    """
     return "Hello World"
 
 
 @router.post("/Chatbot")
 async def opti_chatbot(text: str = Form(...), image: UploadFile = File(...) or None):
+    """
+    Handles chatbot interaction with text and optional image input.
+
+    :param text: Text input from the user.
+    :param image: Optional image input from the user.
+    :return: JSON response containing the chatbot's answer.
+    """
     try:
-        print(type(image))
+        logger.info(f"Received image of type: {type(image)}")
         image_bytes = await image.read()
-    except Exception as e:
-        print(f"ERROR: {e}")
+    except Exception as err:
+        logger.error(f"Error reading image: {err}")
+        image_bytes = None
+
     inputs = get_inputs(image_bytes, text)
     try:
         answer = generate_response(inputs)
-    except Exception as e:
-        answer = f"ERROR: {e}"
-        print(e)
+    except Exception as err:
+        logger.error(f"Error generating response: {err}")
+        answer = f"ERROR: {err}"
+
     return {"answer": answer}
 
 
 @router.get("/reset_chat_history")
 def reset_history():
+    """
+    Resets the chat history.
+
+    :return: Confirmation message.
+    """
     reset_messages()
     return "Message history wiped."
 
 
 @router.websocket("/audio-stream")
 async def audio_stream(websocket: WebSocket):
+    """
+    Handles audio stream via WebSocket connection.
+
+    :param websocket: WebSocket connection.
+    """
     await websocket.accept()
-    print("WebSocket connection established")
+    logger.info("WebSocket connection established")
 
     try:
         while True:
             # Receive audio data in chunks
             data = await websocket.receive_bytes()
-            print(data)
-            a = main(data)
-            print(str(a))
+            logger.info(f"Received data chunk: {data}")
+            response = main(data)
+            logger.info(f"Transcription response: {response}")
+
             if not data:
                 break
-            await websocket.send_text(str(a))
+            await websocket.send_text(str(response))
 
     except WebSocketDisconnect:
-        print("WebSocket connection closed")
-    except Exception as e:
-        print(f"Error in WebSocket connection: {e}")
+        logger.info("WebSocket connection closed")
+    except Exception as err:
+        logger.error(f"Error in WebSocket connection: {err}")
 
 
 @router.post("/upload/")
 async def upload_video(text: str = Form(...), file: UploadFile = File(...)):
+    """
+    Handles video upload and transcription.
+
+    :param text: Additional text input.
+    :param file: Video file to be uploaded.
+    :return: JSON response containing the transcription of the video.
+    """
     with open(file.filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    text = transcription(file.filename)
-
-    return Response(content=text, media_type="application/json")
+    transcription_text = transcription(file.filename)
+    return Response(content=transcription_text, media_type="application/json")
