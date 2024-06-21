@@ -2,7 +2,6 @@ import logging
 import shutil
 
 from fastapi import APIRouter, File, Form, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
@@ -11,6 +10,7 @@ from MultiModal.static.phi3_visionchat import (
     generate_response,
     get_inputs,
     reset_messages,
+    reset_img
 )
 from MultiModal.static.translation_demo import main
 
@@ -24,14 +24,6 @@ logger.addHandler(handler)
 
 router = APIRouter()
 
-router.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-)
-
 
 @router.get("/")
 def index():
@@ -42,39 +34,39 @@ def index():
 
 
 @router.post("/Chatbot")
-async def opti_chatbot(text: str = Form(...), image: UploadFile = File(...) or None):
+async def opti_chatbot(text: str = Form(...), image: UploadFile | None = None):
     """
-    Handles chatbot interaction with text and optional image input.
+    Handles chatbot requests.
+    Accepts text and image inputs and returns a response.
 
-    :param text: Text input from the user.
-    :param image: Optional image input from the user.
-    :return: JSON response containing the chatbot's answer.
+    :param text: Text input.
+    :param image: Image input.
     """
     try:
-        logger.info(f"Received image of type: {type(image)}")
-        image_bytes = await image.read()
-    except Exception as err:
-        logger.error(f"Error reading image: {err}")
-        image_bytes = None
-
+        if image:
+            print(type(image))
+            image_bytes = await image.read()
+        else:
+            image_bytes = None
+    except Exception as e:
+        print(f"ERROR: {e}")
     inputs = get_inputs(image_bytes, text)
     try:
         answer = generate_response(inputs)
-    except Exception as err:
-        logger.error(f"Error generating response: {err}")
-        answer = f"ERROR: {err}"
-
+    except Exception as e:
+        answer = f"ERROR: {e}"
+        print(e)
     return {"answer": answer}
 
 
 @router.get("/reset_chat_history")
 def reset_history():
     """
-    Resets the chat history.
-
-    :return: Confirmation message.
+    Resets chat history.
+    :param request: Request object.
     """
     reset_messages()
+    reset_img()
     return "Message history wiped."
 
 
@@ -102,7 +94,7 @@ async def audio_stream(websocket: WebSocket):
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection closed")
-    except Exception as err:
+    except Exception as err:    
         logger.error(f"Error in WebSocket connection: {err}")
 
 

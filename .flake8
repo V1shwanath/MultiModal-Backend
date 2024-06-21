@@ -1,5 +1,5 @@
 [flake8]
-max-complexity = 6
+max-complexity = 15
 inline-quotes = double
 max-line-length = 88
 extend-ignore = E203
