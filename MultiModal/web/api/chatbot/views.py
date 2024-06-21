@@ -10,7 +10,7 @@ from MultiModal.static.phi3_visionchat import (
     generate_response,
     get_inputs,
     reset_messages,
-    reset_img
+    reset_img,
 )
 from MultiModal.static.translation_demo import main
 
@@ -94,7 +94,7 @@ async def audio_stream(websocket: WebSocket):
 
     except WebSocketDisconnect:
         logger.info("WebSocket connection closed")
-    except Exception as err:    
+    except Exception as err:
         logger.error(f"Error in WebSocket connection: {err}")
 
 

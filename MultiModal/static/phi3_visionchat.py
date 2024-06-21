@@ -40,14 +40,12 @@ def generate_response(inputs):
     }
 
     generate_ids = model.generate(
-        **inputs, eos_token_id=processor.tokenizer.eos_token_id, 
-        **generation_args
+        **inputs, eos_token_id=processor.tokenizer.eos_token_id, **generation_args
     )
 
-    generate_ids = generate_ids[:, inputs["input_ids"].shape[1]:]
+    generate_ids = generate_ids[:, inputs["input_ids"].shape[1] :]
     response = processor.batch_decode(
-        generate_ids, skip_special_tokens=True, 
-        clean_up_tokenization_spaces=False
+        generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False
     )[0]
     torch.cuda.empty_cache()
     update_messages(response)
@@ -55,7 +53,7 @@ def generate_response(inputs):
 
 
 def get_inputs(image_bytes, text):
-    if (image_bytes):
+    if image_bytes:
         prepped_img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         prepped_img.save(IMAGE_PATH)
     else:
