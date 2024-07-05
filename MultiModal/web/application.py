@@ -18,7 +18,7 @@ def get_app() -> FastAPI:
     """
     app = FastAPI(
         title="MultiModal",
-        version=metadata.version("MultiModal"),
+        # version=metadata.version("MultiModal"),
         docs_url="/api/docs",
         redoc_url="/api/redoc",
         openapi_url="/api/openapi.json",

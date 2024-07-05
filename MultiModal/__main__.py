@@ -1,5 +1,6 @@
 import uvicorn
-
+import sys
+sys.path.append("./")
 from MultiModal.settings import settings
 
 

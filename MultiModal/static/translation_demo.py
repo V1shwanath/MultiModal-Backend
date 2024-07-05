@@ -7,7 +7,7 @@ from tempfile import NamedTemporaryFile
 import nltk
 import speech_recognition as sr
 from pydub import AudioSegment
-from WhisperModel import WhisperModel
+from MultiModal.static.WhisperModel import WhisperModel
 
 
 def main(data_incoming):
