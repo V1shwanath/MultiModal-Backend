@@ -10,8 +10,8 @@ from MultiModal.settings import settings
 
 from MultiModal.static.vectordb import vector_store
 import uvicorn
-from MultiModal.static.phi3_visionchat import model,processor
-from MultiModal.static.video_inf import florence_model, flor_processor
+# from MultiModal.static.phi3_visionchat import model,processor
+# from MultiModal.static.video_inf import florence_model, flor_processor
 
 
 
@@ -88,8 +88,8 @@ def register_shutdown_event(
         await app.state.db_engine.dispose()
 
         await shutdown_redis(app)
-        if model is not None:
-            print("====> Deleting model <====")
+        # if model is not None:
+        #     print("====> Deleting model <====")
             # Add logic to delete your model or release resources here
         if vector_store.collection is not None:
             print("====> Deleting collection <====")

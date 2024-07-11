@@ -7,13 +7,14 @@ from fastapi.responses import Response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 from MultiModal.static.faster_whisper1 import transcription
-from MultiModal.static.phi3_visionchat import (
-    generate_response,
-    get_inputs,
-    reset_messages,
-    reset_img,
-    get_video_inputs,
-)
+# from MultiModal.static.phi3_visionchat import (
+#     generate_response,
+#     get_inputs,
+#     reset_messages,
+#     reset_img,
+#     get_video_inputs,
+# )
+from MultiModal.static.phi3_visionchat import phi3_visionchat_instance as phi3_visionchat 
 from MultiModal.static.video_inf import video_inf_instance as video_inf
 # from MultiModal.static.video_inf import processing_status, video_to_frames
 from MultiModal.static.vectordb import vector_store
@@ -55,9 +56,9 @@ async def opti_chatbot(text: str = Form(...), image: UploadFile | None = None):
             image_bytes = None
     except Exception as e:
         print(f"ERROR: {e}")
-    inputs = get_inputs(image_bytes, text)
+    inputs = phi3_visionchat.get_inputs(image_bytes, text)
     try:
-        answer = generate_response(inputs)
+        answer = phi3_visionchat.generate_response(inputs)
     except Exception as e:
         answer = f"ERROR: {e}"
         print(e)
@@ -70,8 +71,8 @@ def reset_history():
     Resets chat history.
     :param request: Request object.
     """
-    reset_messages()
-    reset_img()
+    phi3_visionchat.reset_messages()
+    phi3_visionchat.reset_img()
     return "Message history wiped."
 
 
@@ -164,14 +165,14 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
 
     # Select the inference type
     if inference_type == "Full Context":
-        inputs = get_video_inputs(text, video_inf.processing_status[video_id]["captions"])
+        inputs = phi3_visionchat.get_video_inputs(text, video_inf.processing_status[video_id]["captions"])
     elif inference_type == "VectorDB Timestamp":
         if (vector_store.text_embeddings is None):
             print("populatingggggggggggggggg")
             vector_store.populate_vectors(video_inf.processing_status[video_id]["captions"])
         results = vector_store.search_context(text)
         print("this is the results======================")
-        inputs = get_video_inputs(text, results)
+        inputs = phi3_visionchat.get_video_inputs(text, results)
 
         ## Clean up the collection to be added
     else:
@@ -179,7 +180,7 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
 
     # Generate response
     try:
-        answer = generate_response(inputs)
+        answer = phi3_visionchat.generate_response(inputs)
     except Exception as e:
         answer = f"ERROR: {e}"
         print(e)
@@ -188,13 +189,13 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
 
 @router.get("/reset_chat_history")
 def reset_history():
-    reset_messages()
-    reset_img()
+    phi3_visionchat.reset_messages()
+    phi3_visionchat.reset_img()
     vector_store.delete_collection("my_collection")
     return "Message history wiped."
 
 
 @router.get("/delete_model")
 def delete_models():
-    delete_model()
+    phi3_visionchat.delete_model()
     return "Model deleted"

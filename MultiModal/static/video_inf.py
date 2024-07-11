@@ -142,6 +142,8 @@ class video_inf:
         torch.cuda.empty_cache()
         del self.florence_model
         del self.model
+        del self.flor_processor
+        del self.processor
 
         print(results)
         return results
