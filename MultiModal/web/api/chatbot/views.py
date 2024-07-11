@@ -120,6 +120,7 @@ async def upload_video(text: str = Form(...), file: UploadFile = File(...)):
 
 @router.post("/upload_video")
 async def upload_video(video: UploadFile | None = None):
+    video_inf.init_models()
     try:
         print("VIDEO FILE NAME:", video.filename)
         if video:

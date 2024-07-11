@@ -19,7 +19,11 @@ import gc
 
 class video_inf:
     
-    def __init__(self, florence_model_name="microsoft/Florence-2-base", vit_model_name='google/vit-base-patch16-224-in21k'):
+    def __init__(self):
+        self.prompt = "<MORE_DETAILED_CAPTION>"
+        self.processing_status: Dict[str, str] = {}
+        
+    def init_models(self, florence_model_name="microsoft/Florence-2-base", vit_model_name='google/vit-base-patch16-224-in21k'):
         self.florence_model = AutoModelForCausalLM.from_pretrained(
             florence_model_name, 
             device_map='cuda', 
@@ -30,10 +34,6 @@ class video_inf:
         self.flor_processor = AutoProcessor.from_pretrained(florence_model_name, trust_remote_code=True)
         self.processor = ViTImageProcessor.from_pretrained(vit_model_name)
         self.model = ViTModel.from_pretrained(vit_model_name)
-        self.prompt = "<MORE_DETAILED_CAPTION>"
-        self.processing_status: Dict[str, str] = {}
-        
-        
 
     def get_inf(self,path):
         torch.cuda.empty_cache()
