@@ -5,7 +5,7 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 from MultiModal.settings import settings
 
-os.environ["HF_HOME"] = settings.HF_HOME
+# os.environ["HF_HOME"] = settings.HF_HOME
 
 
 class WhisperModel:

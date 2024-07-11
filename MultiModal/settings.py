@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     redis_pass: Optional[str] = None
     redis_base: Optional[int] = None
 
-    HF_HOME: str = r"..\..\HF_cache"
+    # HF_HOME: str = r"..\..\HF_cache"
     
     @property
     def db_url(self) -> URL:

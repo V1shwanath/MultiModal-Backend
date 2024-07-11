@@ -8,7 +8,7 @@ import os
 from MultiModal.settings import settings
 
 # model_id = os.environ['MODEL_PATH']
-os.environ["HF_HOME"] = settings.HF_HOME
+# os.environ["HF_HOME"] = settings.HF_HOME
 model_id = "microsoft/Phi-3-vision-128k-instruct"
 quant_config = BitsAndBytesConfig(load_in_4bit=True)
 model = AutoModelForCausalLM.from_pretrained(
@@ -25,7 +25,7 @@ processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
 
 messages = []
 image_ref = None
-IMAGE_PATH = r"C:\Users\jvish\OneDrive\Documents\VISH_Stuff\VW_Proj_backend\MultiModal\MultiModal\images\prepped_img.jpg"
+IMAGE_PATH = r"..\images\prepped_img.jpg"
 
 
 def update_messages(response):
