@@ -8,6 +8,7 @@ import cv2
 from pprint import pprint
 from typing import Dict
 import json
+import gc
 
 
 # florence_model = AutoModelForCausalLM.from_pretrained("microsoft/Florence-2-base", device_map='cuda', trust_remote_code=True,torch_dtype = torch.bfloat16, attn_implementation="flash_attention_2")
@@ -144,6 +145,9 @@ class video_inf:
         del self.model
         del self.flor_processor
         del self.processor
+
+        gc.collect()
+        torch.cuda.empty_cache() 
 
         print(results)
         return results

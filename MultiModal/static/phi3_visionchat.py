@@ -4,6 +4,7 @@ from transformers import AutoProcessor
 import torch
 import io
 import os
+import gc
 
 from MultiModal.settings import settings
 
@@ -126,6 +127,7 @@ class phi3_visionchat:
             
     def delete_model(self):
         del self.model
-        del self.processor
+        gc.collect()
+        torch.cuda.empty_cache() 
         
 phi3_visionchat_instance = phi3_visionchat()
