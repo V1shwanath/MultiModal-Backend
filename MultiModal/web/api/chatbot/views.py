@@ -192,3 +192,9 @@ def reset_history():
     reset_img()
     vector_store.delete_collection("my_collection")
     return "Message history wiped."
+
+
+@router.get("/delete_model")
+def delete_models():
+    delete_model()
+    return "Model deleted"

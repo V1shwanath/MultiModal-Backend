@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     # Current environment
     environment: str = "dev"
 
-    log_level: LogLevel = LogLevel.INFO
+    log_level: LogLevel = LogLevel.DEBUG
     # Variables for the database
     db_file: Path = TEMP_DIR / "db.sqlite3"
     db_echo: bool = False
