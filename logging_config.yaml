@@ -1,0 +1,27 @@
+version: 1
+disable_existing_loggers: false
+formatters:
+  default:
+    "()": colorlog.ColoredFormatter
+    format: "%(log_color)s%(levelname)-8s%(reset)s: %(name)s: %(message)s"
+    log_colors:
+      DEBUG:    cyan
+      INFO:     green
+      WARNING:  yellow
+      ERROR:    red
+      CRITICAL: bold_red
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: default
+loggers:
+  uvicorn:
+    handlers: [console]
+    level: DEBUG
+  uvicorn.error:
+    level: DEBUG
+  uvicorn.access:
+    level: DEBUG
+root:
+  level: DEBUG
+  handlers: [console]

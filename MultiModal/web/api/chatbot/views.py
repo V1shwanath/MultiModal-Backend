@@ -1,7 +1,8 @@
 import logging
 import shutil
+import tempfile
 
-from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
@@ -11,7 +12,10 @@ from MultiModal.static.phi3_visionchat import (
     get_inputs,
     reset_messages,
     reset_img,
+    get_video_inputs,
 )
+from MultiModal.static.video_inf import processing_status, video_to_frames
+from MultiModal.static.vectordb import vector_store
 from MultiModal.static.translation_demo import main
 
 # Setup logger
@@ -111,3 +115,79 @@ async def upload_video(text: str = Form(...), file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
     transcription_text = transcription(file.filename)
     return Response(content=transcription_text, media_type="application/json")
+
+@router.post("/upload_video")
+async def upload_video(video: UploadFile | None = None):
+    try:
+        print("VIDEO FILE NAME:", video.filename)
+        if video:
+            print("TYPE ====",type(video))
+            print("VIDEO FILE NAME:", video.filename)
+            
+            with tempfile.NamedTemporaryFile(delete=False) as temp_video:
+                shutil.copyfileobj(video.file, temp_video)
+            
+            video_id = video.filename
+            processing_status[video_id] = "processing"
+            video_to_frames(temp_video.name, video_id)
+            return {"video_id": video_id, "status": "processed"}
+        else:
+            # video_path = None
+            print("VIDEO NOT FOUND")
+    except Exception as e:
+        print(f"ERROR: {e}")
+        
+    return {"answer": "SUCCESS"}
+
+
+@router.post("/video_chatbot_2.0")
+async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), video_id: str = Form(...)):
+    """
+    Process text input through a video chatbot using the specified inference type.
+
+    Args:
+        text (str): The input text for the chatbot.
+        inference_type (str): The type of inference to use ("Full Context" or "VectorDB Timestamp").
+
+    Returns:
+        dict: A dictionary with the chatbot's answer.
+    """
+    if video_id not in processing_status:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    # Check if captions are available for the video
+    if "captions" not in processing_status[video_id]:
+        raise HTTPException(
+            status_code=400, detail="Captions not available for the video"
+        )
+
+    # Select the inference type
+    if inference_type == "Full Context":
+        inputs = get_video_inputs(text, processing_status[video_id]["captions"])
+    elif inference_type == "VectorDB Timestamp":
+        if (vector_store.text_embeddings is None):
+            print("populatingggggggggggggggg")
+            vector_store.populate_vectors(processing_status[video_id]["captions"])
+        results = vector_store.search_context(text)
+        print("this is the results======================")
+        inputs = get_video_inputs(text, results)
+
+        ## Clean up the collection to be added
+    else:
+        raise HTTPException(status_code=400, detail="Invalid inference type")
+
+    # Generate response
+    try:
+        answer = generate_response(inputs)
+    except Exception as e:
+        answer = f"ERROR: {e}"
+        print(e)
+
+    return {"answer": answer}
+
+@router.get("/reset_chat_history")
+def reset_history():
+    reset_messages()
+    reset_img()
+    vector_store.delete_collection("my_collection")
+    return "Message history wiped."

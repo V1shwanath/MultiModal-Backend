@@ -7,6 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from MultiModal.web.api.router import api_router
 from MultiModal.web.lifetime import register_shutdown_event, register_startup_event
 
+from MultiModal.static.vectordb import vector_store
+
 
 def get_app() -> FastAPI:
     """
@@ -31,10 +33,11 @@ def get_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
+    
 
     # Adds startup and shutdown events.
-    register_startup_event(app)
-    register_shutdown_event(app)
+    register_startup_event(app, vector_store)
+    register_shutdown_event(app, vector_store)
 
     # Main router for the API.
     app.include_router(router=api_router, prefix="/api")
