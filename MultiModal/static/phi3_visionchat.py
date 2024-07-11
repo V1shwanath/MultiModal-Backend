@@ -8,7 +8,9 @@ import os
 from MultiModal.settings import settings
 
 # model_id = os.environ['MODEL_PATH']
-os.environ["HF_HOME"] = settings.HF_HOME
+# os.environ["HF_HOME"] = settings.HF_HOME
+global model
+global processor
 model_id = "microsoft/Phi-3-vision-128k-instruct"
 quant_config = BitsAndBytesConfig(load_in_4bit=True)
 model = AutoModelForCausalLM.from_pretrained(

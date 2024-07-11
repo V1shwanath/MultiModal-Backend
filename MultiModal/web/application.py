@@ -10,6 +10,7 @@ from MultiModal.web.lifetime import register_shutdown_event, register_startup_ev
 from MultiModal.static.vectordb import vector_store
 
 
+
 def get_app() -> FastAPI:
     """
     Get FastAPI application.
@@ -42,4 +43,5 @@ def get_app() -> FastAPI:
     # Main router for the API.
     app.include_router(router=api_router, prefix="/api")
 
+    
     return app
