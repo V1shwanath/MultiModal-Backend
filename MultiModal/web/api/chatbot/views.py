@@ -14,7 +14,8 @@ from MultiModal.static.phi3_visionchat import (
     reset_img,
     get_video_inputs,
 )
-from MultiModal.static.video_inf import processing_status, video_to_frames
+from MultiModal.static.video_inf import video_inf_instance as video_inf
+# from MultiModal.static.video_inf import processing_status, video_to_frames
 from MultiModal.static.vectordb import vector_store
 from MultiModal.static.translation_demo import main
 
@@ -128,8 +129,8 @@ async def upload_video(video: UploadFile | None = None):
                 shutil.copyfileobj(video.file, temp_video)
             
             video_id = video.filename
-            processing_status[video_id] = "processing"
-            video_to_frames(temp_video.name, video_id)
+            video_inf.processing_status[video_id] = "processing"
+            video_inf.video_to_frames(temp_video.name, video_id)
             return {"video_id": video_id, "status": "processed"}
         else:
             # video_path = None
@@ -152,22 +153,22 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
     Returns:
         dict: A dictionary with the chatbot's answer.
     """
-    if video_id not in processing_status:
+    if video_id not in video_inf.processing_status:
         raise HTTPException(status_code=404, detail="Video not found")
 
     # Check if captions are available for the video
-    if "captions" not in processing_status[video_id]:
+    if "captions" not in video_inf.processing_status[video_id]:
         raise HTTPException(
             status_code=400, detail="Captions not available for the video"
         )
 
     # Select the inference type
     if inference_type == "Full Context":
-        inputs = get_video_inputs(text, processing_status[video_id]["captions"])
+        inputs = get_video_inputs(text, video_inf.processing_status[video_id]["captions"])
     elif inference_type == "VectorDB Timestamp":
         if (vector_store.text_embeddings is None):
             print("populatingggggggggggggggg")
-            vector_store.populate_vectors(processing_status[video_id]["captions"])
+            vector_store.populate_vectors(video_inf.processing_status[video_id]["captions"])
         results = vector_store.search_context(text)
         print("this is the results======================")
         inputs = get_video_inputs(text, results)
