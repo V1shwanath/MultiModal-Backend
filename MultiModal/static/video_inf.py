@@ -188,6 +188,8 @@ class video_inf:
                 })
         self.processing_status[video_id] = {"status": "complete", "captions" : merged_data}
         print(merged_data)
+        gc.collect()
+        torch.cuda.empty_cache() 
         return merged_data
     
     

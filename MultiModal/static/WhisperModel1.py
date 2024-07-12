@@ -3,6 +3,7 @@ import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 import json
 from MultiModal.settings import settings
+import gc
 
 # os.environ["HF_HOME"] = settings.HF_HOME
 
@@ -52,6 +53,10 @@ class WhisperModel1:
         os.makedirs('../transcript_log', exist_ok=True)
         with open('../log/transcript.json', 'w', encoding='utf-8') as f:
             json.dump(timestamps, f, ensure_ascii=False, indent=4)
+        del self.model
+        del self.processor
+        gc.collect()
+        torch.cuda.empty_cache() 
         return timestamps
     
 whisper_model_instance = WhisperModel1()
