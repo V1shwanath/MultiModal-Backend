@@ -9,6 +9,8 @@ from pprint import pprint
 from typing import Dict
 import json
 import gc
+from MultiModal.static.WhisperModel1 import whisper_model_instance
+from moviepy.editor import VideoFileClip
 
 
 # florence_model = AutoModelForCausalLM.from_pretrained("microsoft/Florence-2-base", device_map='cuda', trust_remote_code=True,torch_dtype = torch.bfloat16, attn_implementation="flash_attention_2")
@@ -139,7 +141,6 @@ class video_inf:
         # Release the video capture object
         cap.release()
         print(f"Extracted {saved_frame_num} frames to {output_folder}")
-        self.processing_status[video_id] = {"status": "complete", "captions" : results}
         torch.cuda.empty_cache()
         del self.florence_model
         del self.model
@@ -149,11 +150,61 @@ class video_inf:
         gc.collect()
         torch.cuda.empty_cache() 
 
-        print(results)
-        return results
+        # print(results)
+        # open log/transcript.json
+        video = VideoFileClip(video_path)
+        audio = video.audio
+        # audio_path = r"audio.wav"
+        audio.write_audiofile("audio.wav")
+        whisper_model_instance.transcribe("audio.wav")
+        video_transcript_path = r"..\log\transcript.json"
+        os.makedirs('../log', exist_ok=True)
+        with open(video_transcript_path, 'r') as file:
+            video_transcript_data = json.load(file)
+        frame_captions_data = results
+        # add captions to the transcript
+        merged_data = []
+        used_transcripts = set()
+
+        for caption in frame_captions_data:
+            caption_time = self.timestamp_to_seconds(caption['timestamp'])
+            matched = False
+            for transcript in video_transcript_data:
+                start, end = transcript['timestamp']
+                if start <= caption_time <= end and transcript['text'] not in used_transcripts:
+                    merged_data.append({
+                        'Caption': caption['caption'],
+                        'Timestamp': caption['timestamp'],
+                        'Transcript': transcript['text']
+                    })
+                    used_transcripts.add(transcript['text'])
+                    matched = True
+                    break
+            if not matched:
+                merged_data.append({
+                    'Caption': caption['caption'],
+                    'Timestamp': caption['timestamp'],
+                    'Transcript': ''
+                })
+        self.processing_status[video_id] = {"status": "complete", "captions" : merged_data}
+        print(merged_data)
+        return merged_data
+    
+    
+    
     def reset_processing_status(self):
         self.processing_status.clear()
         return "Processing status reset."
+    
+    def timestamp_to_seconds(self,timestamp):
+        if 'm' in timestamp and 's' in timestamp:
+            minutes, seconds = timestamp.split('m')
+            seconds = seconds.replace('s', '')
+            return int(minutes) * 60 + float(seconds)
+        elif 's' in timestamp:
+            seconds = timestamp.replace('s', '')
+            return float(seconds)
+        return 0
 
 video_inf_instance = video_inf()
 

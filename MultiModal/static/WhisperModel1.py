@@ -1,17 +1,16 @@
 import os
-
 import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
-
+import json
 from MultiModal.settings import settings
 
 # os.environ["HF_HOME"] = settings.HF_HOME
 
 
-class WhisperModel:
+class WhisperModel1:
     def __init__(
         self,
-        model_id: str,
+        model_id: str = "openai/whisper-large-v3",
         torch_dtype: str = "auto",
         device: str = "cuda:0",
         use_safetensors: bool = True,
@@ -50,4 +49,9 @@ class WhisperModel:
         )
 
         timestamps = result["chunks"]
+        os.makedirs('../transcript_log', exist_ok=True)
+        with open('../log/transcript.json', 'w', encoding='utf-8') as f:
+            json.dump(timestamps, f, ensure_ascii=False, indent=4)
         return timestamps
+    
+whisper_model_instance = WhisperModel1()
