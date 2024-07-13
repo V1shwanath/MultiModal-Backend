@@ -5,6 +5,7 @@ import tempfile
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
+
 # from MultiModal.static.WhisperModel1 import whisper_model_instance
 # from MultiModal.static.faster_whisper1 import transcription
 # from MultiModal.static.phi3_visionchat import (
@@ -14,11 +15,14 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 #     reset_img,
 #     get_video_inputs,
 # )
-from MultiModal.static.phi3_visionchat import phi3_visionchat_instance as phi3_visionchat 
-from MultiModal.static.video_inf import video_inf_instance as video_inf
+from MultiModal.static.phi3_visionchat import (
+    phi3_visionchat_instance as phi3_visionchat,
+)
+from MultiModal.static.translation_demo import main
+
 # from MultiModal.static.video_inf import processing_status, video_to_frames
 from MultiModal.static.vectordb import vector_store
-from MultiModal.static.translation_demo import main
+from MultiModal.static.video_inf import video_inf_instance as video_inf
 
 # Setup logger
 logger = logging.getLogger("my_logger")
@@ -118,6 +122,7 @@ async def audio_stream(websocket: WebSocket):
 #     # transcription_text = whisper_model_instance.transcription(file.filename)
 #     return Response(content=transcription_text, media_type="application/json")
 
+
 @router.post("/upload_video")
 async def upload_video(video: UploadFile | None = None, frameInterval: str = Form(...)):
     video_inf.init_models()
@@ -125,29 +130,33 @@ async def upload_video(video: UploadFile | None = None, frameInterval: str = For
     try:
         print("VIDEO FILE NAME:", video.filename)
         if video:
-            print("TYPE ====",type(video))
+            print("TYPE ====", type(video))
             print("VIDEO FILE NAME:", video.filename)
-            
+
             with tempfile.NamedTemporaryFile(delete=False) as temp_video:
                 shutil.copyfileobj(video.file, temp_video)
-            
+
             video_id = video.filename
             video_inf.processing_status[video_id] = "processing"
-            video_inf.video_to_frames(temp_video.name, video_id, frame_interval=int(frameInterval))
+            video_inf.video_to_frames(
+                temp_video.name, video_id, frame_interval=int(frameInterval)
+            )
             print("files has been processed===================")
             return {"video_id": video_id, "status": "processed"}
-        
+
         else:
             # video_path = None
             print("VIDEO NOT FOUND")
     except Exception as e:
         print(f"ERROR: {e}")
-        
+
     return {"answer": "SUCCESS"}
 
 
 @router.post("/video_chatbot_2.0")
-async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), video_id: str = Form(...)):
+async def video_chatbot(
+    text: str = Form(...), inference_type: str = Form(...), video_id: str = Form(...)
+):
     """
     Process text input through a video chatbot using the specified inference type.
 
@@ -158,7 +167,7 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
     Returns:
         dict: A dictionary with the chatbot's answer.
     """
-    
+
     print("emtering apiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
     if video_id not in video_inf.processing_status:
         raise HTTPException(status_code=404, detail="Video not found")
@@ -171,11 +180,15 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
 
     # Select the inference type
     if inference_type == "Full Context":
-        inputs = phi3_visionchat.get_video_inputs(text, video_inf.processing_status[video_id]["captions"])
+        inputs = phi3_visionchat.get_video_inputs(
+            text, video_inf.processing_status[video_id]["captions"]
+        )
     elif inference_type == "VectorDB Timestamp":
-        if (vector_store.text_embeddings is None):
+        if vector_store.text_embeddings is None:
             print("populatingggggggggggggggg")
-            vector_store.populate_vectors(video_inf.processing_status[video_id]["captions"])
+            vector_store.populate_vectors(
+                video_inf.processing_status[video_id]["captions"]
+            )
         results = vector_store.search_context(text)
         print("this is the results======================")
         inputs = phi3_visionchat.get_video_inputs(text, results)
@@ -193,6 +206,7 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
 
     return {"answer": answer}
 
+
 @router.get("/reset_chat_history")
 def reset_history():
     phi3_visionchat.reset_messages()
@@ -203,8 +217,8 @@ def reset_history():
 
 @router.get("/delete_model")
 def delete_models():
-    if hasattr(phi3_visionchat, 'model'):
+    if hasattr(phi3_visionchat, "model"):
         phi3_visionchat.delete_model()
-    if hasattr(video_inf, 'model'):
+    if hasattr(video_inf, "model"):
         video_inf.delete_model()
     return "Model deleted"

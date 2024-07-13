@@ -1,11 +1,15 @@
-import uvicorn
 import sys
+
+import uvicorn
+
 sys.path.append("./")
-from MultiModal.settings import settings
-from pathlib import Path
-import yaml
 import os
 import shutil
+from pathlib import Path
+
+import yaml
+
+from MultiModal.settings import settings
 
 uvicorn_logger = uvicorn.config.logger
 uvicorn_logger.info("Starting up the application...")
@@ -20,7 +24,7 @@ if os.path.exists(sqlite_file) and os.path.isfile(sqlite_file):
 
 logging_config_path = r"logging_config.yaml"
 print(logging_config_path)
-with open(logging_config_path, 'r') as file:
+with open(logging_config_path, "r") as file:
     logging_config = yaml.safe_load(file)
 
 

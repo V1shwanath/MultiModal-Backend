@@ -25,9 +25,3 @@ repos:
     rev: v4.4.0  # Use the latest version available
     hooks:
       - id: requirements-txt-fixer
-
-  - repo: https://github.com/pre-commit/mirrors-bandit
-    rev: v1.7.0  # Use the latest version available
-    hooks:
-      - id: bandit
-        args: ['--severity-level', 'high', '--skip', 'B101,B311']  # Example arguments

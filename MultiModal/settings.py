@@ -6,7 +6,7 @@ from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from yarl import URL
 
-TEMP_DIR = Path('../')
+TEMP_DIR = Path("../")
 
 
 class LogLevel(str, enum.Enum):  # noqa: WPS600
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     redis_base: Optional[int] = None
 
     # HF_HOME: str = r"..\..\HF_cache"
-    
+
     @property
     def db_url(self) -> URL:
         """

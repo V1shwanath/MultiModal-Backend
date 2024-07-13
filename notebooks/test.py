@@ -1,9 +1,10 @@
-import os
-import torch
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
-import json
 # from MultiModal.settings import settings
 import gc
+import json
+import os
+
+import torch
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 # os.environ["HF_HOME"] = settings.HF_HOME
 
@@ -11,8 +12,8 @@ import gc
 class WhisperModel1:
     def __init__(self):
         pass
-        
-    def whisper_initalize(self, model_name = "openai/whisper-large-v3"):
+
+    def whisper_initalize(self, model_name="openai/whisper-large-v3"):
         self.whisper_model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_name,
             torch_dtype="auto",
@@ -32,7 +33,6 @@ class WhisperModel1:
             batch_size=16,
             torch_dtype="auto",
         )
-        
 
     def transcribe(self, audio_file):
         result = self.pipe(
@@ -42,19 +42,21 @@ class WhisperModel1:
         )
 
         timestamps = result["chunks"]
-        os.makedirs('../transcript_log', exist_ok=True)
-        with open(r'media\transcription\transcription.json', 'w', encoding='utf-8') as f:
+        os.makedirs("../transcript_log", exist_ok=True)
+        with open(
+            r"media\transcription\transcription.json", "w", encoding="utf-8"
+        ) as f:
             json.dump(timestamps, f, ensure_ascii=False, indent=4)
         return timestamps
-    
+
     def delete_whisper_model(self):
         torch.cuda.empty_cache()
         del self.whisper_model
         del self.whisper_processor
         del self.pipe
         gc.collect()
-        
-    
+
+
 whisper_model_instance = WhisperModel1()
 
 whisper_model_instance.whisper_initalize()

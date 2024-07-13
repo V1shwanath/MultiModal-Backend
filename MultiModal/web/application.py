@@ -1,14 +1,12 @@
 from importlib import metadata
 
 from fastapi import FastAPI
-from fastapi.responses import UJSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-
-from MultiModal.web.api.router import api_router
-from MultiModal.web.lifetime import register_shutdown_event, register_startup_event
+from fastapi.responses import UJSONResponse
 
 from MultiModal.static.vectordb import vector_store
-
+from MultiModal.web.api.router import api_router
+from MultiModal.web.lifetime import register_shutdown_event, register_startup_event
 
 
 def get_app() -> FastAPI:
@@ -34,7 +32,6 @@ def get_app() -> FastAPI:
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
-    
 
     # Adds startup and shutdown events.
     register_startup_event(app, vector_store)
@@ -43,5 +40,4 @@ def get_app() -> FastAPI:
     # Main router for the API.
     app.include_router(router=api_router, prefix="/api")
 
-    
     return app

@@ -1,5 +1,6 @@
 from typing import Awaitable, Callable
 
+import uvicorn
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -7,13 +8,10 @@ from MultiModal.db.meta import meta
 from MultiModal.db.models import load_all_models
 from MultiModal.services.redis.lifetime import init_redis, shutdown_redis
 from MultiModal.settings import settings
-
 from MultiModal.static.vectordb import vector_store
-import uvicorn
+
 # from MultiModal.static.phi3_visionchat import model,processor
 # from MultiModal.static.video_inf import florence_model, flor_processor
-
-
 
 
 def _setup_db(app: FastAPI, vector_store) -> None:  # pragma: no cover
@@ -42,10 +40,7 @@ async def _create_tables() -> None:  # pragma: no cover
     await engine.dispose()
 
 
-def register_startup_event(
-    app: FastAPI,
-    vector_store
-) -> Callable[[], Awaitable[None]]:
+def register_startup_event(app: FastAPI, vector_store) -> Callable[[], Awaitable[None]]:
     """
     Actions to run on application startup.
 
@@ -60,7 +55,7 @@ def register_startup_event(
     @app.on_event("startup")
     async def _startup() -> None:
         app.middleware_stack = None
-        _setup_db(app,vector_store)
+        _setup_db(app, vector_store)
         await _create_tables()
         init_redis(app)
 
@@ -69,11 +64,8 @@ def register_startup_event(
     return _startup
 
 
-
-
 def register_shutdown_event(
-    app: FastAPI,
-    vector_store
+    app: FastAPI, vector_store
 ) -> Callable[[], Awaitable[None]]:  # pragma: no cover
     """
     Actions to run on application's shutdown.
@@ -90,13 +82,13 @@ def register_shutdown_event(
         await shutdown_redis(app)
         # if model is not None:
         #     print("====> Deleting model <====")
-            # Add logic to delete your model or release resources here
+        # Add logic to delete your model or release resources here
         if vector_store.collection is not None:
             print("====> Deleting collection <====")
             vector_store.delete_collection("your_collection_name")
         else:
             print("Collection Deleted Already")
-        
-        pass  # noqa: WPS420    
+
+        pass  # noqa: WPS420
 
     return _shutdown
