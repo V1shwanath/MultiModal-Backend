@@ -119,7 +119,7 @@ async def audio_stream(websocket: WebSocket):
 #     return Response(content=transcription_text, media_type="application/json")
 
 @router.post("/upload_video")
-async def upload_video(video: UploadFile | None = None):
+async def upload_video(video: UploadFile | None = None, frameInterval: str = Form(...)):
     video_inf.init_models()
     phi3_visionchat.reset_messages()
     try:
@@ -133,7 +133,7 @@ async def upload_video(video: UploadFile | None = None):
             
             video_id = video.filename
             video_inf.processing_status[video_id] = "processing"
-            video_inf.video_to_frames(temp_video.name, video_id)
+            video_inf.video_to_frames(temp_video.name, video_id, frame_interval=int(frameInterval))
             print("files has been processed===================")
             return {"video_id": video_id, "status": "processed"}
         

@@ -18,7 +18,7 @@ if os.path.exists(chroma_folder) and os.path.isdir(chroma_folder):
 if os.path.exists(sqlite_file) and os.path.isfile(sqlite_file):
     os.remove(sqlite_file)
 
-logging_config_path = r"C:\Users\jvish\OneDrive\Documents\VISH_Stuff\VW_Proj_backend\MultiModal\logging_config.yaml"
+logging_config_path = r"logging_config.yaml"
 print(logging_config_path)
 with open(logging_config_path, 'r') as file:
     logging_config = yaml.safe_load(file)

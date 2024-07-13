@@ -197,6 +197,7 @@ class video_inf:
     
     
     def delete_model(self):
+        torch.cuda.empty_cache()
         del self.florence_model
         del self.model
         del self.flor_processor
