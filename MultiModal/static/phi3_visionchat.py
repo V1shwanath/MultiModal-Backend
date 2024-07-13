@@ -115,7 +115,6 @@ class phi3_visionchat:
         return inputs
 
     def reset_messages(self):
-        global messages
         torch.cuda.empty_cache()
         self.messages = []
         return self.messages
