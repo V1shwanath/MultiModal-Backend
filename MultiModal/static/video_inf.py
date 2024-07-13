@@ -76,7 +76,7 @@ class video_inf:
         return filename
 
 
-    def video_to_frames(self,video_path,video_id, output_folder=r"..\videos\frames", frame_interval=75 ):
+    def video_to_frames(self,video_path,video_id, output_folder=r"..\videos\frames", frame_interval=25 ):
         """
         Extract frames from a video at a specified interval and process them with get_inf.
 
@@ -146,19 +146,18 @@ class video_inf:
         del self.model
         del self.flor_processor
         del self.processor
-
+        torch.cuda.empty_cache()
         gc.collect()
-        torch.cuda.empty_cache() 
 
         # print(results)
         # open log/transcript.json
         video = VideoFileClip(video_path)
         audio = video.audio
-        # audio_path = r"audio.wav"
+        audio_path = r"audio.wav"
         audio.write_audiofile("audio.wav")
+        whisper_model_instance.whisper_initalize()
         whisper_model_instance.transcribe("audio.wav")
-        video_transcript_path = r"..\log\transcript.json"
-        os.makedirs('../log', exist_ok=True)
+        video_transcript_path = r"media\transcription\transcription.json"
         with open(video_transcript_path, 'r') as file:
             video_transcript_data = json.load(file)
         frame_captions_data = results
@@ -187,11 +186,24 @@ class video_inf:
                     'Transcript': ''
                 })
         self.processing_status[video_id] = {"status": "complete", "captions" : merged_data}
-        print(merged_data)
-        gc.collect()
-        torch.cuda.empty_cache() 
+        
+        whisper_model_instance.delete_whisper_model()
+        # self.processing_status[video_id] = {"status": "complete", "captions" : results}
+        # print(merged_data)
+        print("Processing complete. ==========================")
+        
         return merged_data
+        # return results
     
+    
+    def delete_model(self):
+        torch.cuda.empty_cache()
+        del self.florence_model
+        del self.model
+        del self.flor_processor
+        del self.processor
+        gc.collect()
+        torch.cuda.empty_cache()
     
     
     def reset_processing_status(self):

@@ -2,7 +2,7 @@ import os
 import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 import json
-from MultiModal.settings import settings
+# from MultiModal.settings import settings
 import gc
 
 # os.environ["HF_HOME"] = settings.HF_HOME
@@ -52,8 +52,16 @@ class WhisperModel1:
         del self.whisper_model
         del self.whisper_processor
         del self.pipe
-        torch.cuda.empty_cache()
         gc.collect()
         
     
 whisper_model_instance = WhisperModel1()
+
+whisper_model_instance.whisper_initalize()
+print("Whisper model has been initialized")
+whisper_model_instance.transcribe(r"media\audio.mp3")
+
+whisper_model_instance.delete_whisper_model()
+
+for i in range(1000000):
+    print(i)
