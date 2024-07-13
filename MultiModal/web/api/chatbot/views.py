@@ -5,7 +5,7 @@ import tempfile
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-from MultiModal.static.WhisperModel1 import whisper_model_instance
+# from MultiModal.static.WhisperModel1 import whisper_model_instance
 # from MultiModal.static.faster_whisper1 import transcription
 # from MultiModal.static.phi3_visionchat import (
 #     generate_response,
@@ -104,23 +104,24 @@ async def audio_stream(websocket: WebSocket):
         logger.error(f"Error in WebSocket connection: {err}")
 
 
-@router.post("/upload/")
-async def upload_video(text: str = Form(...), file: UploadFile = File(...)):
-    """
-    Handles video upload and transcription.
+# @router.post("/upload/")
+# async def upload_video(text: str = Form(...), file: UploadFile = File(...)):
+#     """
+#     Handles video upload and transcription.
 
-    :param text: Additional text input.
-    :param file: Video file to be uploaded.
-    :return: JSON response containing the transcription of the video.
-    """
-    with open(file.filename, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    transcription_text = whisper_model_instance.transcription(file.filename)
-    return Response(content=transcription_text, media_type="application/json")
+#     :param text: Additional text input.
+#     :param file: Video file to be uploaded.
+#     :return: JSON response containing the transcription of the video.
+#     """
+#     with open(file.filename, "wb") as buffer:
+#         shutil.copyfileobj(file.file, buffer)
+#     # transcription_text = whisper_model_instance.transcription(file.filename)
+#     return Response(content=transcription_text, media_type="application/json")
 
 @router.post("/upload_video")
 async def upload_video(video: UploadFile | None = None):
     video_inf.init_models()
+    phi3_visionchat.reset_messages()
     try:
         print("VIDEO FILE NAME:", video.filename)
         if video:
@@ -155,6 +156,8 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
     Returns:
         dict: A dictionary with the chatbot's answer.
     """
+    
+    print("emtering apiiiiiiiiiiiiiiiiiiiiiiiiiiiiii")
     if video_id not in video_inf.processing_status:
         raise HTTPException(status_code=404, detail="Video not found")
 
@@ -191,12 +194,15 @@ async def video_chatbot(text: str = Form(...), inference_type: str = Form(...), 
 @router.get("/reset_chat_history")
 def reset_history():
     phi3_visionchat.reset_messages()
-    phi3_visionchat.reset_img()
+    # phi3_visionchat.reset_img()
     vector_store.delete_collection("my_collection")
     return "Message history wiped."
 
 
 @router.get("/delete_model")
 def delete_models():
-    phi3_visionchat.delete_model()
+    if hasattr(phi3_visionchat, 'model'):
+        phi3_visionchat.delete_model()
+    if hasattr(video_inf, 'model'):
+        video_inf.delete_model()
     return "Model deleted"
