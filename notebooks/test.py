@@ -9,40 +9,32 @@ import gc
 
 
 class WhisperModel1:
-    def __init__(
-        self,
-        model_id: str = "openai/whisper-large-v3",
-        torch_dtype: str = torch.bfloat16,
-        device: str = "cuda:0",
-        use_safetensors: bool = True,
-        attn_implementation: str = "flash_attention_2",
-        files: dict = None,
-    ):
-
-        device = "cuda:0" if torch.cuda.is_available() else "cpu"
-        self.model = AutoModelForSpeechSeq2Seq.from_pretrained(
-            model_id,
-            torch_dtype=torch_dtype,
-            use_safetensors=use_safetensors,
-            attn_implementation=attn_implementation,
+    def __init__(self):
+        pass
+        
+    def whisper_initalize(self, model_name = "openai/whisper-large-v3"):
+        self.whisper_model = AutoModelForSpeechSeq2Seq.from_pretrained(
+            model_name,
+            torch_dtype="auto",
+            use_safetensors=True,
+            attn_implementation="flash_attention_2",
+            device_map="cuda:0",
         )
-        self.model = self.model.to(device)
-        self.processor = AutoProcessor.from_pretrained(model_id)
-
+        # self.model = self.model.to("cuda:0")
+        self.whisper_processor = AutoProcessor.from_pretrained(model_name)
         self.pipe = pipeline(
             "automatic-speech-recognition",
-            model=self.model,
-            tokenizer=self.processor.tokenizer,
-            feature_extractor=self.processor.feature_extractor,
+            model=self.whisper_model,
+            tokenizer=self.whisper_processor.tokenizer,
+            feature_extractor=self.whisper_processor.feature_extractor,
             max_new_tokens=128,
             chunk_length_s=30,
             batch_size=16,
-            torch_dtype=torch_dtype,
-            device=device,
+            torch_dtype="auto",
         )
+        
 
     def transcribe(self, audio_file):
-
         result = self.pipe(
             audio_file,
             generate_kwargs={"language": "english"},
@@ -51,13 +43,25 @@ class WhisperModel1:
 
         timestamps = result["chunks"]
         os.makedirs('../transcript_log', exist_ok=True)
-        with open('../log/transcript.json', 'w', encoding='utf-8') as f:
+        with open(r'media\transcription\transcription.json', 'w', encoding='utf-8') as f:
             json.dump(timestamps, f, ensure_ascii=False, indent=4)
-        del self.model
-        del self.processor
-        # gc.collect()
-        # torch.cuda.empty_cache() 
         return timestamps
     
+    def delete_whisper_model(self):
+        torch.cuda.empty_cache()
+        del self.whisper_model
+        del self.whisper_processor
+        del self.pipe
+        gc.collect()
+        
+    
 whisper_model_instance = WhisperModel1()
-whisper_model_instance.transcribe("test.mp3")
+
+whisper_model_instance.whisper_initalize()
+print("Whisper model has been initialized")
+whisper_model_instance.transcribe(r"media\audio.mp3")
+
+whisper_model_instance.delete_whisper_model()
+
+for i in range(1000000):
+    print(i)

@@ -9,7 +9,7 @@ from pprint import pprint
 from typing import Dict
 import json
 import gc
-# from MultiModal.static.WhisperModel1 import whisper_model_instance
+from MultiModal.static.WhisperModel1 import whisper_model_instance
 from moviepy.editor import VideoFileClip
 
 
@@ -142,56 +142,58 @@ class video_inf:
         cap.release()
         print(f"Extracted {saved_frame_num} frames to {output_folder}")
         torch.cuda.empty_cache()
-        # del self.florence_model
-        # del self.model
-        # del self.flor_processor
-        # del self.processor
-
-        # gc.collect()
+        del self.florence_model
+        del self.model
+        del self.flor_processor
+        del self.processor
+        torch.cuda.empty_cache()
+        gc.collect()
 
         # print(results)
         # open log/transcript.json
-        # video = VideoFileClip(video_path)
-        # audio = video.audio
-        # # audio_path = r"audio.wav"
-        # audio.write_audiofile("audio.wav")
-        # # whisper_model_instance.transcribe("audio.wav")
-        # video_transcript_path = r"..\log\transcript.json"
-        # os.makedirs('../log', exist_ok=True)
-        # with open(video_transcript_path, 'r') as file:
-        #     video_transcript_data = json.load(file)
-        # frame_captions_data = results
-        # # add captions to the transcript
-        # merged_data = []
-        # used_transcripts = set()
+        video = VideoFileClip(video_path)
+        audio = video.audio
+        audio_path = r"audio.wav"
+        audio.write_audiofile("audio.wav")
+        whisper_model_instance.whisper_initalize()
+        whisper_model_instance.transcribe("audio.wav")
+        video_transcript_path = r"media\transcription\transcription.json"
+        with open(video_transcript_path, 'r') as file:
+            video_transcript_data = json.load(file)
+        frame_captions_data = results
+        # add captions to the transcript
+        merged_data = []
+        used_transcripts = set()
 
-        # for caption in frame_captions_data:
-        #     caption_time = self.timestamp_to_seconds(caption['timestamp'])
-        #     matched = False
-        #     for transcript in video_transcript_data:
-        #         start, end = transcript['timestamp']
-        #         if start <= caption_time <= end and transcript['text'] not in used_transcripts:
-        #             merged_data.append({
-        #                 'Caption': caption['caption'],
-        #                 'Timestamp': caption['timestamp'],
-        #                 'Transcript': transcript['text']
-        #             })
-        #             used_transcripts.add(transcript['text'])
-        #             matched = True
-        #             break
-        #     if not matched:
-        #         merged_data.append({
-        #             'Caption': caption['caption'],
-        #             'Timestamp': caption['timestamp'],
-        #             'Transcript': ''
-        #         })
-        # self.processing_status[video_id] = {"status": "complete", "captions" : merged_data}
+        for caption in frame_captions_data:
+            caption_time = self.timestamp_to_seconds(caption['timestamp'])
+            matched = False
+            for transcript in video_transcript_data:
+                start, end = transcript['timestamp']
+                if start <= caption_time <= end and transcript['text'] not in used_transcripts:
+                    merged_data.append({
+                        'Caption': caption['caption'],
+                        'Timestamp': caption['timestamp'],
+                        'Transcript': transcript['text']
+                    })
+                    used_transcripts.add(transcript['text'])
+                    matched = True
+                    break
+            if not matched:
+                merged_data.append({
+                    'Caption': caption['caption'],
+                    'Timestamp': caption['timestamp'],
+                    'Transcript': ''
+                })
+        self.processing_status[video_id] = {"status": "complete", "captions" : merged_data}
         
-        self.processing_status[video_id] = {"status": "complete", "captions" : results}
+        whisper_model_instance.delete_whisper_model()
+        # self.processing_status[video_id] = {"status": "complete", "captions" : results}
         # print(merged_data)
-        torch.cuda.empty_cache() 
-        # return merged_data
-        return results
+        print("Processing complete. ==========================")
+        
+        return merged_data
+        # return results
     
     
     def delete_model(self):

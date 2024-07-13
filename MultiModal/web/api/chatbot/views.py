@@ -134,7 +134,9 @@ async def upload_video(video: UploadFile | None = None):
             video_id = video.filename
             video_inf.processing_status[video_id] = "processing"
             video_inf.video_to_frames(temp_video.name, video_id)
+            print("files has been processed===================")
             return {"video_id": video_id, "status": "processed"}
+        
         else:
             # video_path = None
             print("VIDEO NOT FOUND")
