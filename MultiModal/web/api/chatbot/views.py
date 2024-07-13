@@ -5,8 +5,8 @@ import tempfile
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-
-from MultiModal.static.faster_whisper1 import transcription
+from MultiModal.static.WhisperModel1 import whisper_model_instance
+# from MultiModal.static.faster_whisper1 import transcription
 # from MultiModal.static.phi3_visionchat import (
 #     generate_response,
 #     get_inputs,
@@ -115,7 +115,7 @@ async def upload_video(text: str = Form(...), file: UploadFile = File(...)):
     """
     with open(file.filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    transcription_text = transcription(file.filename)
+    transcription_text = whisper_model_instance.transcription(file.filename)
     return Response(content=transcription_text, media_type="application/json")
 
 @router.post("/upload_video")
