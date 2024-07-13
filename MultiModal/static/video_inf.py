@@ -172,19 +172,21 @@ class video_inf:
                 start, end = transcript['timestamp']
                 if start <= caption_time <= end and transcript['text'] not in used_transcripts:
                     merged_data.append({
-                        'Caption': caption['caption'],
-                        'Timestamp': caption['timestamp'],
-                        'Transcript': transcript['text']
+                        'timestamp': caption['timestamp'],
+                        'caption': caption['caption'],
+                        'transcription': transcript['text']
                     })
                     used_transcripts.add(transcript['text'])
                     matched = True
                     break
             if not matched:
                 merged_data.append({
-                    'Caption': caption['caption'],
-                    'Timestamp': caption['timestamp'],
-                    'Transcript': ''
+                    'timestamp': caption['timestamp'],
+                    'caption': caption['caption'],
+                    # 'transcript': ''
                 })
+                
+        print("=============", merged_data)
         self.processing_status[video_id] = {"status": "complete", "captions" : merged_data}
         
         whisper_model_instance.delete_whisper_model()

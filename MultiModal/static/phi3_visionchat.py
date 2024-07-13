@@ -36,25 +36,34 @@ class phi3_visionchat:
 
 
     def generate_response(self,inputs):
-        generation_args = {
-            "max_new_tokens": 500,
-            "temperature": 0.0,
-            "do_sample": False,
-        }
+        try:
+            generation_args = {
+                "max_new_tokens": 500,
+                "temperature": 0.0,
+                "do_sample": False,
+            }
 
-        generate_ids = self.model.generate(
-            **inputs, eos_token_id=self.processor.tokenizer.eos_token_id, 
-            **generation_args
-        )
+            generate_ids = self.model.generate(
+                **inputs, eos_token_id=self.processor.tokenizer.eos_token_id, 
+                **generation_args
+            )
 
-        generate_ids = generate_ids[:, inputs["input_ids"].shape[1]:]
-        response = self.processor.batch_decode(
-            generate_ids, skip_special_tokens=True, 
-            clean_up_tokenization_spaces=False
-        )[0]
-        torch.cuda.empty_cache()
-        self.update_messages(response)
-        return response
+            generate_ids = generate_ids[:, inputs["input_ids"].shape[1]:]
+            response = self.processor.batch_decode(
+                generate_ids, skip_special_tokens=True, 
+                clean_up_tokenization_spaces=False
+            )[0]
+            torch.cuda.empty_cache()
+            self.update_messages(response)
+            return response
+    
+        except RuntimeError as e:
+            if "CUDA out of memory" in str(e):
+                print("CUDA out of memory. Clearing cache.")
+                torch.cuda.empty_cache()
+            else:
+                print(f"Unexpected error: {str(e)}")
+
 
 
     def get_inputs(self,image_bytes, text):
@@ -85,9 +94,9 @@ class phi3_visionchat:
         if (self.messages == []):
             self.messages.append({"role": "user", "content": f"""
 
-    System Prompt: Understanding Framewise Captions and Timestamps in a Video Sequence
+    System Prompt: Understanding Framewise Captions and Timestamps with Transcriptions in a Video Sequence
 
-    You are an advanced language model tasked with understanding and interpreting a sequence of events in a video. The data provided consists of framewise captions accompanied by timestamps. Each caption describes a specific scene or moment in the video at a precise time.
+    You are an advanced language model tasked with understanding and interpreting a sequence of events in a video and the conversations. The data provided consists of framewise captions accompanied by timestamps and transcriptions for conversations. Each caption describes a specific scene or moment in the video at a precise time.
 
     Your objective is to accurately comprehend and organize these events to reflect the narrative flow of the video.
 
@@ -96,12 +105,13 @@ class phi3_visionchat:
     Timestamps: Indicate the exact time in seconds when each frame appears in the video.
     Captions: Describe the visual content and context of each frame at the given timestamp.
     Sequence of Events:
+    Transcriptions: Include transcriptions of conversations or dialogues that occur in the video. 
 
     The events are presented in chronological order based on their timestamps.
     Each caption corresponds to a unique frame or scene in the video.
     The sequence builds a coherent narrative or story as the video progresses. \n
 
-    {vid_context}\n Answer the Question: {text}"""})
+    {vid_context}\n Answer the Question : {text}"""})
         else:
             print("didnt get the Video Context")
             self.messages.append({"role": "user", "content": f"{text}"})
