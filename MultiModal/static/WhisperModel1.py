@@ -27,8 +27,8 @@ class WhisperModel1:
             model=self.whisper_model,
             tokenizer=self.whisper_processor.tokenizer,
             feature_extractor=self.whisper_processor.feature_extractor,
-            max_new_tokens=128,
-            chunk_length_s=30,
+            max_new_tokens=256,
+            # chunk_length_s=30,
             batch_size=16,
             torch_dtype="auto",
         )
