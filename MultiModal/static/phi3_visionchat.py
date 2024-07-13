@@ -27,7 +27,7 @@ class phi3_visionchat:
         self.processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
         self.messages = []
         self.image_ref = None
-        self.IMAGE_PATH = r"..\images\prepped_img.jpg"
+        self.IMAGE_PATH = r"MultiModal\images\prepped_img.jpg"
         
         
     def update_messages(self,response):
@@ -115,7 +115,6 @@ class phi3_visionchat:
         return inputs
 
     def reset_messages(self):
-        global messages
         torch.cuda.empty_cache()
         self.messages = []
         return self.messages
