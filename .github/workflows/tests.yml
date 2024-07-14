@@ -5,9 +5,6 @@ on: push
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    container:
-      image: nvidia/cuda:12.1-base  # Use the CUDA 12.1 base image from NVIDIA
 
     steps:
     - name: Checkout repository
