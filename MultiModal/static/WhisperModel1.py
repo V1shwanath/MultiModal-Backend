@@ -43,11 +43,11 @@ class WhisperModel1:
         )
 
         timestamps = result["chunks"]
-        os.makedirs("../transcript_log", exist_ok=True)
-        with open(
-            r"media\transcription\transcription.json", "w", encoding="utf-8"
-        ) as f:
-            json.dump(timestamps, f, ensure_ascii=False, indent=4)
+        # os.makedirs("../transcript_log", exist_ok=True)
+        # with open(
+        #     r"media\transcription\transcription.json", "w", encoding="utf-8"
+        # ) as f:
+        #     json.dump(timestamps, f, ensure_ascii=False, indent=4)
         return timestamps
 
     def delete_whisper_model(self):

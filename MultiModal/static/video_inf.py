@@ -93,6 +93,18 @@ class video_inf:
         cv2.imwrite(filename, frame)
         # print(f"Saved {filename}")
         return filename
+    
+    def adjust_timestamps(self,transcripts):
+        adjusted_transcripts = []
+        offset = 0.0
+        for i in range(len(transcripts)):
+            if i > 0 and transcripts[i]['timestamp'][0] < transcripts[i-1]['timestamp'][0]:
+                offset += 30.0  # Add 30 seconds offset when timestamp resets
+            adjusted_transcripts.append({
+                'timestamp': (transcripts[i]['timestamp'][0] + offset, transcripts[i]['timestamp'][1] + offset),
+                'text': transcripts[i]['text']
+            })
+        return adjusted_transcripts
 
     def video_to_frames(
         self, video_path, video_id, output_folder=r"..\videos\frames", frame_interval=25
@@ -178,10 +190,15 @@ class video_inf:
         audio_path = r"audio.wav"
         audio.write_audiofile("audio.wav")
         whisper_model_instance.whisper_initalize()
-        whisper_model_instance.transcribe("audio.wav")
-        video_transcript_path = r"media\transcription\transcription.json"
-        with open(video_transcript_path, "r") as file:
-            video_transcript_data = json.load(file)
+        transcriptions = whisper_model_instance.transcribe("audio.wav")
+        corrected_transcriptions = self.adjust_timestamps(transcriptions)
+        print('-------------------------------------------------')
+        print(corrected_transcriptions)
+        print('-------------------------------------------------')
+        # video_transcript_path = r"media\transcription\transcription.json"
+        # with open(video_transcript_path, "r") as file:
+        #     video_transcript_data = json.load(file)
+        video_transcript_data = corrected_transcriptions
         frame_captions_data = results
         # add captions to the transcript
         merged_data = []
