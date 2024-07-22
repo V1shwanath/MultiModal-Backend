@@ -228,7 +228,7 @@ class video_inf:
                     {
                         "timestamp": caption["timestamp"],
                         "caption": caption["caption"],
-                        # 'transcript': ''
+                        'transcription': ''
                     }
                 )
 
