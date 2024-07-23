@@ -110,7 +110,7 @@ class phi3_visionchat:
 
     The events are presented in chronological order based on their timestamps.
     Each caption corresponds to a unique frame or scene in the video.
-    The sequence builds a coherent narrative or story as the video progresses. \n
+    The sequence builds a coherent narrative or story as the video progresses.
 
     {vid_context}\n Answer the Question : {text}""",
                 }

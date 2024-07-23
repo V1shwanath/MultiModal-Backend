@@ -41,25 +41,28 @@ class VectorStore:
             )
 
         for i in dataset:
-            combined_text = f"{i['timestamp']}"
-            combined_text_caption = f"{i['caption']}"
-            embeddings = self.embedding_model.encode(combined_text).tolist()
+            timestamps = f"{i['timestamp']}"
+            captions = f"{i['caption']}"
+            transcriptions = f"{i['transcription']}"
+            combined_text = f"Captions: {captions} | Transcriptions: {transcriptions} | Timestamps: {timestamps}"
+            timestamp_embeddings = self.embedding_model.encode(timestamps).tolist()
             self.text_embeddings = self.embedding_model.encode(
-                combined_text_caption
+                combined_text
             ).tolist()
+            if (transcriptions):
+                self.collection.add(
+                    documents=[combined_text],
+                    embeddings=[timestamp_embeddings],
+                    ids=[f"{i['timestamp']}"],
+                )
             self.collection.add(
-                documents=[i["caption"]],
-                embeddings=[embeddings],
-                ids=[f"id_{i['timestamp']}"],
-            )
-            self.collection.add(
-                documents=[i["caption"]],
+                documents=[combined_text],
                 embeddings=[self.text_embeddings],
                 ids=[f"id_{i['timestamp']}_caption"],
             )
 
     # Method to search the ChromaDB collection for relevant context based on a query
-    def search_context(self, query, n_results=10):
+    def search_context(self, query, n_results=3):
         if self.collection is None:
             raise RuntimeError(
                 "Collection is not initialized. Call create_collection() first."
