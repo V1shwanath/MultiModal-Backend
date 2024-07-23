@@ -195,6 +195,8 @@ class video_inf:
         print('-------------------------------------------------')
         print(corrected_transcriptions)
         print('-------------------------------------------------')
+        print(results)
+        print('-------------------------------------------------')
         # video_transcript_path = r"media\transcription\transcription.json"
         # with open(video_transcript_path, "r") as file:
         #     video_transcript_data = json.load(file)
